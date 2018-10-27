@@ -102,10 +102,10 @@ static int yescrypt_bitzeny(const uint8_t *passwd, size_t passwdlen,
 
 #endif
 
-static void yescrypt_hash(const char *input, char *output)
+static void yescrypt_hash(const char *input, char *output, int size)
 {
-    yescrypt_bitzeny((const uint8_t *) input, 80,
-                     (const uint8_t *) input, 80,
+    yescrypt_bitzeny((const uint8_t *) input, size,
+                     (const uint8_t *) input, size,
                      (uint8_t *) output, 32);
 }
 
@@ -118,15 +118,16 @@ static PyObject *yescrypt_getpowhash(PyObject *self, PyObject *args)
 #else
     PyStringObject *input;
 #endif
-    if (!PyArg_ParseTuple(args, "S", &input))
+    int size = 80;
+    if (!PyArg_ParseTuple(args, "S|i", &input, &size))
         return NULL;
     Py_INCREF(input);
     output = PyMem_Malloc(32);
 
 #if PY_MAJOR_VERSION >= 3
-    yescrypt_hash((char *)PyBytes_AsString((PyObject*) input), output);
+    yescrypt_hash((char *)PyBytes_AsString((PyObject*) input), output, size);
 #else
-    yescrypt_hash((char *)PyString_AsString((PyObject*) input), output);
+    yescrypt_hash((char *)PyString_AsString((PyObject*) input), output, size);
 #endif
     Py_DECREF(input);
 #if PY_MAJOR_VERSION >= 3
